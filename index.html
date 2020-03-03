@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="./index.js"></script>
+  <style>
+    * {margin:0;padding:0}
+    body {height:100%;overflow:hidden}
+    .header {width:100%;height:50px;background-color:blue;color:#fff;position:fixed;top:0;z-index:-1}
+    .section {width:100%;height:100%;display: table;table-layout:fixed;}
+    .section1 {background-color:red}
+    .section2 {background-color:gray}
+    .section3 {background-color:greenyellow}
+    .section4 {background-color:hotpink}
+    .full_page {transition: all 1000ms ease 0s}
+    .no_transition {transition: all 0ms ease 0s}
+  </style>
+</head>
+<body>
+  <header class="header">
+    header
+  </header>
+  <div id="full_page" class="full_page" style="transform: translate3d(0,0,0);">    
+    <section class="section section1 active">A Page</section>
+    <section class="section section2">B Page</section>
+    <section class="section section3">C Page</section>
+    <section class="section section4">D Page</section>
+  </div>
+</body>
+</html>
