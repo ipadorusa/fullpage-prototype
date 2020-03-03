@@ -104,15 +104,6 @@ const addClass = (el, className) => {
   return el;
 }
 
-const addAnimation = (element) => {
-  var transition = 'all ' + options.scrollingSpeed + 'ms ' + options.easingcss3;
-
-  removeClass(element, NO_TRANSITION);
-  return css(element, {
-      '-webkit-transition': transition,
-      'transition': transition
-  });
-}
 
 const FullScrollPage = class {
   constructor(container) {    
@@ -142,6 +133,7 @@ const FullScrollPage = class {
   }
   
   bindEvent() {
+    window.addEventListener('scroll', () => this.scrollHandler());
     window.addEventListener('resize', () => this.resizeEvt());
     document.addEventListener('keydown', (e) => this.keyDownHandler(e));
     document.addEventListener('keyup', (e) => this.keyUpHandler(e));
@@ -149,6 +141,9 @@ const FullScrollPage = class {
     this.$container.addEventListener('mouseup', (e) => mouseUpHandler(e));
   }
   
+  scrollHandler() {
+    console.log('aa')
+  }
   keyDownHandler(e) {
     clearTimeout(this.keydownId);
     let keyControls = [40, 38, 32, 33, 34];
@@ -162,14 +157,21 @@ const FullScrollPage = class {
     let translate3d = null;
     if(e.keyCode === 40) {      
       this.countSection += 1;
+      if(this.countSection === this.$section.length) {
+        this.countSection -= 1;
+        return;
+      };
       removeClass(this.$container, 'no_transition');
       removeClass(this.$section, 'active');
       addClass(this.$section[this.countSection], 'active');
-      translate3d =  'translate3d(0px, -' + this.arraySectionH[this.countSection] + 'px, 0px)';
-      
+      translate3d =  'translate3d(0px, -' + this.arraySectionH[this.countSection] + 'px, 0px)';      
       css(this.$container, getTransforms(translate3d));
-    }else if(e.keyCode === 38) {
+    }else if(e.keyCode === 38) {      
       this.countSection -= 1;
+      if(this.countSection == -1) {
+        this.countSection = 0;
+        return;
+      };
       removeClass(this.$container, 'no_transition');
       removeClass(this.$section, 'active');
       addClass(this.$section[this.countSection], 'active');
