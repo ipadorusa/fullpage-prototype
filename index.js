@@ -101,16 +101,15 @@ const getAverage = (elements, number) => {
 
   return Math.ceil(sum/number);
 }
-const deepExtend = (out) => {
+function deepExtend(out) {
   out = out || {};
-  for (var i = 1, len = arguments.length; i < len; ++i){
-      var obj = arguments[i];
+  for (let i = 1, len = arguments.length; i < len; ++i){
+    let obj = arguments[i];
 
       if(!obj){
         continue;
       }
-
-      for(var key in obj){
+      for(let key in obj){
         if (!obj.hasOwnProperty(key)){
           continue;
         }
@@ -126,39 +125,9 @@ const deepExtend = (out) => {
   }
   return out;
 }
-let oldPageY = 0;
-const mouseDownHandler = (e) => {
-  if (e.which == 2) {
-    oldPageY = e.pageY;
-    document.querySelector('#full_page').addEventListener('mousemove', mouseMoveHandler);
-  }
-};
-const mouseUpHandler = (e) => {
-  if (e.which == 2) {
-    document.querySelector('#full_page').removeEventListener('mousemove', mouseMoveHandler);
-  }
-};
-const mouseMoveHandler = (e) =>{
-  if (e.pageY < oldPageY){
-    eventFullpage.movePage('up')
-  } else if(e.pageY > oldPageY){
-    eventFullpage.movePage('down')
-  }
-  oldPageY = e.pageY;
-}
-
-const getMSPointer = () => {
-  let pointer;
-
-  //IE >= 11 & rest of browsers
-  if(window.PointerEvent){
-      pointer = { down: 'pointerdown', move: 'pointermove'};
-  }else{
-      pointer = { down: 'MSPointerDown', move: 'MSPointerMove'};
-  }
-
-  return pointer;
-}
+let isScrollAllowed = {};
+isScrollAllowed.m = {  'up':true, 'down':true, 'left':true, 'right':true };
+isScrollAllowed.k = deepExtend({}, isScrollAllowed.m);
 
 const FullScrollPage = class {
 	constructor(container) {
@@ -179,11 +148,13 @@ const FullScrollPage = class {
     this.oldPageY = 0;
     this.isTouchDevice = navigator.userAgent.match(/(iPhone|iPod|iPad|Android|playbook|silk|BlackBerry|BB10|Windows Phone|Tizen|Bada|webOS|IEMobile|Opera Mini)/);
     this.isTouch = (('ontouchstart' in window) || (navigator.msMaxTouchPoints > 0) || (navigator.maxTouchPoints));
-    this.MSPointer = getMSPointer();
+    this.MSPointer = this.getMSPointer();
     this.events = {
-      touchmove: 'ontouchmove' in window ? 'touchmove' :  MSPointer.move,
-      touchstart: 'ontouchstart' in window ? 'touchstart' :  MSPointer.down
+      touchmove: 'ontouchmove' in window ? 'touchmove' :  this.MSPointer.move,
+      touchstart: 'ontouchstart' in window ? 'touchstart' :  this.MSPointer.down
     };
+    this.g_canFireMouseEnterNormalScroll = true;
+    this.canScroll = true;
 		this.init();
 	}
 	init() {
@@ -197,31 +168,58 @@ const FullScrollPage = class {
 		});
 		this.settingHeight();
     this.bindEvent();
+    this.setAllowScrolling(true);
     this.setMouseHijack(true);
 	}
 
 	bindEvent() {
+    let _self = this;
 		window.addEventListener("resize", () => this.resizeEvt());
 		document.addEventListener("keydown", (e) => this.keyDownHandler(e));
-		document.addEventListener("keyup", (e) => this.keyUpHandler(e));
-	}
-  setMouseHijack(value) {
-		if (value) {
-			this.setMouseWheelScrolling(true);
-			this.addTouchHandler();
-		} else {
-			this.setMouseWheelScrolling(false);
-			this.removeTouchHandler();
-		}
+    document.addEventListener("keyup", (e) => this.keyUpHandler(e));
   }
-	setMouseWheelScrolling(value) {
-		if (value) {
-			this.addMouseWheelHandler();
-			this.addMiddleWheelHandler();
-		} else {
-			this.removeMouseWheelHandler();
-			this.removeMiddleWheelHandler();
-		}
+  
+  
+
+  setAllowScrolling(value, directions) {
+    if(typeof directions !== 'undefined'){
+      directions = directions.replace(/ /g,'').split(',');
+
+      directions.forEach(function (direction){
+        this.setIsScrollAllowed(value, direction, 'm');
+      });
+    }
+    else{
+      this.setIsScrollAllowed(value, 'all', 'm');
+    }
+  }
+  setIsScrollAllowed(value, direction, type) {
+    //up, down, left, right
+    if(direction !== 'all'){
+      isScrollAllowed[type][direction] = value;
+    }
+    else{    
+      Object.keys(isScrollAllowed[type]).forEach(function(key){
+        isScrollAllowed[type][key] = value;
+      });
+    }
+  }
+
+  setMouseHijack(value) {
+    if (value) {
+      this.setMouseWheelScrolling(true);
+      this.addTouchHandler();
+    } else {
+      this.setMouseWheelScrolling(false);
+      this.removeTouchHandler();
+    }
+  }
+  setMouseWheelScrolling(value) {
+    if (value) {      
+      this.addMouseWheelHandler();
+    } else {
+      this.removeMouseWheelHandler();
+    }
   }
 
   addMouseWheelHandler() {
@@ -261,17 +259,6 @@ const FullScrollPage = class {
       );
     }
   }
-  
-  addMiddleWheelHandler(){
-    /* this.$container.addEventListener('mousedown', this.mouseDownHandler.bind(this));
-    this.$container.addEventListener('mouseup', this.mouseUpHandler.bind(this)); */
-    this.$container.addEventListener('mousedown', mouseDownHandler);
-    this.$container.addEventListener('mouseup', mouseUpHandler);
-  }
-  removeMiddleWheelHandler(){
-    this.$container.removeEventListener('mousedown', mouseDownHandler);
-    this.$container.removeEventListener('mouseup', mouseUpHandler);
-  }
   removeMouseWheelHandler(){
     if (document.addEventListener) {
       document.removeEventListener('mousewheel', this.MouseWheelHandler, false); //IE9, Chrome, Safari, Oper
@@ -281,9 +268,6 @@ const FullScrollPage = class {
       document.detachEvent('onmousewheel', this.MouseWheelHandler); //IE 6/7/8
     }
   }
-  
-	
-  
 
   MouseWheelHandler = (e) => {
     let curTime = new Date().getTime();
@@ -294,7 +278,7 @@ const FullScrollPage = class {
   
     const horizontalDetection = typeof e.wheelDeltaX !== 'undefined' || typeof e.deltaX !== 'undefined';
     const isScrollingVertically = (Math.abs(e.wheelDeltaX) < Math.abs(e.wheelDelta)) || (Math.abs(e.deltaX ) < Math.abs(e.deltaY) || !horizontalDetection);
-    
+
     //Limiting the array to 150 (lets not waste memory!)
     if(scrollings.length > 149){
         scrollings.shift();
@@ -311,10 +295,9 @@ const FullScrollPage = class {
     //haven't they scrolled in a while?
     //(enough to be consider a different scrolling action to scroll another section)
     if(timeDiff > 200){
-        //emptying the array, we dont care about old scrollings for our averages
-        scrollings = [];
+      //emptying the array, we dont care about old scrollings for our averages
+      scrollings = [];
     }
-  
     let averageEnd = getAverage(scrollings, 10);
     let averageMiddle = getAverage(scrollings, 70);
     let isAccelerating = averageEnd >= averageMiddle;
@@ -323,18 +306,17 @@ const FullScrollPage = class {
     if(isAccelerating && isScrollingVertically){
         //scrolling down?
         if (delta < 0) {
-            this.scrolling('down');
-        //scrolling up?
+          this.scrolling('down');
         }else {
-            this.scrolling('up');
+          this.scrolling('up');
         }
     }
     return false;
   }
-
   scrolling = (type) => {
+    clearTimeout(this.keyId);
     const scrollSection = (type === 'down') ? this.moveSectionDown : this.moveSectionUp;
-    scrollSection();
+    this.keyId = setTimeout(() => scrollSection(), 300);
   }
   moveSectionDown = () => {
     this.movePage('down')
@@ -396,14 +378,26 @@ const FullScrollPage = class {
     }
   }
 
+  getMSPointer() {
+    let pointer;
+  
+    //IE >= 11 & rest of browsers
+    if(window.PointerEvent){
+        pointer = { down: 'pointerdown', move: 'pointermove'};
+    }else{
+        pointer = { down: 'MSPointerDown', move: 'MSPointerMove'};
+    }
+    return pointer;
+  }
+
 
 	keyDownHandler(e) {
-		clearTimeout(this.keydownId);
+		clearTimeout(this.keyId);
 		let keyControls = [40, 38, 32, 33, 34];
 		let keyCode = e.keyCode;
 		if (keyControls.indexOf(keyCode) > -1) {
 			e.preventDefault();
-			this.keyId = setTimeout(() => this.onkeydown(e), 500);
+			this.keyId = setTimeout(() => this.onkeydown(e), 300);
 		}
 	}
 	onkeydown(e) {
@@ -430,10 +424,10 @@ const FullScrollPage = class {
 	}
 	resizeEvt() {
 		this.settingHeight();
-		let translate3d =
+		this.translate3d =
 			"translate3d(0px, -" + this.arraySectionH[this.countSection] + "px, 0px)";
 		addClass(this.$container, "no_transition");
-		css(this.$container, getTransforms(translate3d));
+		css(this.$container, getTransforms(this.translate3d));
 	}
 };
 window.addEventListener("DOMContentLoaded", () => {
