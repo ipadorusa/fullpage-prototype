@@ -344,11 +344,7 @@ const FullScrollPage = class {
     //to avoid double swipes...
     if (isAccelerating && isScrollingVertically) {
       //scrolling down?
-      if (delta < 0) {
-        this.scrolling('down');
-      } else {
-        this.scrolling('up');
-      }
+      delta < 0 ? this.scrolling('down') : this.scrolling('up');
     }
     return false;
   };
@@ -356,12 +352,15 @@ const FullScrollPage = class {
     clearTimeout(this.keyId);
     const scrollSection =
       type === 'down' ? this.moveSectionDown : this.moveSectionUp;
-    this.keyId = setTimeout(() => scrollSection(), 300);
+
+    this.keyId = setTimeout(() => {
+      scrollSection();
+    }, 100);
   };
   moveSectionDown = () => this.movePage('down');
   moveSectionUp = () => this.movePage('up');
   movePage = direction => {
-    if (direction === null) return;
+    if (direction === 'down' && direction === 'up') return;
     direction === 'down' ? (this.countSection += 1) : (this.countSection -= 1);
     if (this.countSection === this.$section.length) {
       this.countSection -= 1;
@@ -410,7 +409,7 @@ const FullScrollPage = class {
   };
   touchStartHandler = e => {
     if (this.isReallyTouch(e)) {
-      let touchEvents = getEventsPage(e);
+      let touchEvents = this.getEventsPage(e);
       this.touchStartY = touchEvents.y;
       this.touchStartX = touchEvents.x;
     }
@@ -461,6 +460,22 @@ const FullScrollPage = class {
     }
   };
 
+  touchMoveHandler = e => {
+    if (this.isReallyTouch(e)) {
+      let touchEvents = this.getEventsPage(e);
+
+      touchEndY = touchEvents.y;
+      touchEndX = touchEvents.x;
+      if (Math.abs(touchStartY - touchEndY) > (window.innerHeight / 100) * 5) {
+        if (touchStartY > touchEndY) {
+          this.scrolling('down');
+        } else if (touchEndY > touchStartY) {
+          this.scrolling('up');
+        }
+      }
+    }
+  };
+
   getMSPointer() {
     let pointer;
 
@@ -482,6 +497,7 @@ const FullScrollPage = class {
       this.keyId = setTimeout(() => this.onkeydown(e), 300);
     }
   }
+
   onkeydown(e) {
     if (e.keyCode === 40) {
       this.movePage('down');
