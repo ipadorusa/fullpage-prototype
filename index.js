@@ -142,7 +142,7 @@ const FullScrollPage = class {
     this.arraySectionH = [];
     this.countSection = 0;
     this.g_supportsPassive = false;
-    this.prevTime = new Date().getTime();
+    this.prevTime = null;
     this.translate3d = null;
     this.oldPageY = 0;
     this.isTouchDevice = navigator.userAgent.match(
@@ -167,6 +167,7 @@ const FullScrollPage = class {
     this.init();
   }
   init() {
+    this.prevTime = new Date().getTime();
     css(this.$htmlBody, {
       overflow: 'hidden',
       height: '100%',
@@ -182,7 +183,6 @@ const FullScrollPage = class {
   }
 
   bindEvent() {
-    let _self = this;
     window.addEventListener('resize', () => this.resizeEvt());
     document.addEventListener('keydown', e => this.keyDownHandler(e));
     document.addEventListener('keyup', e => this.keyUpHandler(e));
@@ -349,6 +349,7 @@ const FullScrollPage = class {
     return false;
   };
   scrolling = type => {
+    let curTime = new Date().getTime();
     clearTimeout(this.keyId);
     const scrollSection =
       type === 'down' ? this.moveSectionDown : this.moveSectionUp;
