@@ -10,8 +10,8 @@ if (window.NodeList && !NodeList.prototype.forEach) {
 const getList = item => (!isArrayOrList(item) ? [item] : item);
 const isArrayOrList = el => {
   return (
-    Object.prototype.toString.call(el) === "[object Array]" ||
-    Object.prototype.toString.call(el) === "[object NodeList]"
+    Object.prototype.toString.call(el) === '[object Array]' ||
+    Object.prototype.toString.call(el) === '[object NodeList]'
   );
 };
 const css = (items, props) => {
@@ -30,10 +30,10 @@ const css = (items, props) => {
 };
 const getTransforms = translate3d => {
   return {
-    "-webkit-transform": translate3d,
-    "-moz-transform": translate3d,
-    "-ms-transform": translate3d,
-    transform: translate3d
+    '-webkit-transform': translate3d,
+    '-moz-transform': translate3d,
+    '-ms-transform': translate3d,
+    transform: translate3d,
   };
 };
 
@@ -44,7 +44,7 @@ const getScrollTop = () => {
 const removeClass = (el, className) => {
   el = getList(el);
 
-  let classNames = className.split(" ");
+  let classNames = className.split(' ');
 
   for (var a = 0; a < classNames.length; a++) {
     className = classNames[a];
@@ -55,10 +55,10 @@ const removeClass = (el, className) => {
       } else {
         item.className = item.className.replace(
           new RegExp(
-            "(^|\\b)" + className.split(" ").join("|") + "(\\b|$)",
-            "gi"
+            '(^|\\b)' + className.split(' ').join('|') + '(\\b|$)',
+            'gi',
           ),
-          " "
+          ' ',
         );
       }
     }
@@ -73,7 +73,7 @@ const addClass = (el, className) => {
     if (item.classList) {
       item.classList.add(className);
     } else {
-      item.className += " " + className;
+      item.className += ' ' + className;
     }
   }
   return el;
@@ -85,7 +85,7 @@ const hasClass = (el, className) => {
   if (el.classList) {
     return el.classList.contains(className);
   }
-  return new RegExp("(^| )" + className + "( |$)", "gi").test(el.className);
+  return new RegExp('(^| )' + className + '( |$)', 'gi').test(el.className);
 };
 const getAverage = (elements, number) => {
   var sum = 0;
@@ -113,7 +113,7 @@ const deepExtend = function(out) {
       }
 
       // based on https://javascriptweblog.wordpress.com/2011/08/08/fixing-the-javascript-typeof-operator/
-      if (Object.prototype.toString.call(obj[key]) === "[object Object]") {
+      if (Object.prototype.toString.call(obj[key]) === '[object Object]') {
         out[key] = deepExtend(out[key], obj[key]);
         continue;
       }
@@ -130,10 +130,10 @@ isScrollAllowed.k = deepExtend({}, isScrollAllowed.m);
 
 const FullScrollPage = class {
   constructor(container) {
-    this.$htmlBody = document.querySelectorAll("html, body");
-    this.$body = document.querySelector("body");
+    this.$htmlBody = document.querySelectorAll('html, body');
+    this.$body = document.querySelector('body');
     this.$container = document.querySelector(container);
-    this.$section = document.querySelectorAll(".section");
+    this.$section = document.querySelectorAll('.section');
     this.sectionLenth = this.$section.length;
     this.keyId = null;
     this.isWindowFocused = null;
@@ -146,30 +146,34 @@ const FullScrollPage = class {
     this.translate3d = null;
     this.oldPageY = 0;
     this.isTouchDevice = navigator.userAgent.match(
-      /(iPhone|iPod|iPad|Android|playbook|silk|BlackBerry|BB10|Windows Phone|Tizen|Bada|webOS|IEMobile|Opera Mini)/
+      /(iPhone|iPod|iPad|Android|playbook|silk|BlackBerry|BB10|Windows Phone|Tizen|Bada|webOS|IEMobile|Opera Mini)/,
     );
     this.isTouch =
-      "ontouchstart" in window ||
+      'ontouchstart' in window ||
       navigator.msMaxTouchPoints > 0 ||
       navigator.maxTouchPoints;
     this.MSPointer = this.getMSPointer();
     this.events = {
-      touchmove: "ontouchmove" in window ? "touchmove" : this.MSPointer.move,
-      touchstart: "ontouchstart" in window ? "touchstart" : this.MSPointer.down
+      touchmove: 'ontouchmove' in window ? 'touchmove' : this.MSPointer.move,
+      touchstart: 'ontouchstart' in window ? 'touchstart' : this.MSPointer.down,
     };
     this.g_canFireMouseEnterNormalScroll = true;
     this.canScroll = true;
     this.checkInView = null;
+    this.touchStartY = 0;
+    this.touchStartX = 0;
+    this.touchEndY = 0;
+    this.touchEndX = 0;
     this.init();
   }
   init() {
     css(this.$htmlBody, {
-      overflow: "hidden",
-      height: "100%"
+      overflow: 'hidden',
+      height: '100%',
     });
     css(this.$container, {
-      "-ms-touch-action": "none",
-      "touch-action": "none"
+      '-ms-touch-action': 'none',
+      'touch-action': 'none',
     });
     this.settingHeight();
     this.bindEvent();
@@ -179,48 +183,52 @@ const FullScrollPage = class {
 
   bindEvent() {
     let _self = this;
-    window.addEventListener("resize", () => this.resizeEvt());
-    document.addEventListener("keydown", e => this.keyDownHandler(e));
-    document.addEventListener("keyup", e => this.keyUpHandler(e));
+    window.addEventListener('resize', () => this.resizeEvt());
+    document.addEventListener('keydown', e => this.keyDownHandler(e));
+    document.addEventListener('keyup', e => this.keyUpHandler(e));
   }
 
   checkInViewSection() {
-    document.querySelectorAll(".section").forEach((el, idx) => {
-      if (hasClass(el, "active")) {
+    document.querySelectorAll('.section').forEach((el, idx) => {
+      if (hasClass(el, 'active')) {
         return (this.checkInView = idx);
       }
     });
   }
   directGo(idx) {
-    addClass(this.$container, "no_transition");
-    removeClass(this.$section, "active");
+    addClass(this.$container, 'no_transition');
+    removeClass(this.$section, 'active');
     this.translate3d =
-      "translate3d(0px, -" + this.arraySectionH[idx] + "px, 0px)";
+      'translate3d(0px, -' + this.arraySectionH[idx] + 'px, 0px)';
     css(this.$container, getTransforms(this.translate3d));
-    addClass(this.$section[idx], "active");
+    addClass(this.$section[idx], 'active');
     this.countSection = idx;
   }
   preventBouncing(e) {
-    if (options.autoScrolling && isReallyTouch(e) && isScrollAllowed.m.up) {
+    if (this.isReallyTouch(e) && isScrollAllowed.m.up) {
       //preventing the easing on iOS devices
       preventDefault(e);
     }
   }
+  isReallyTouch(e) {
+    //if is not IE   ||  IE is detecting `touch` or `pen`
+    return typeof e.pointerType === 'undefined' || e.pointerType != 'mouse';
+  }
 
   setAllowScrolling(value, directions) {
-    if (typeof directions !== "undefined") {
-      directions = directions.replace(/ /g, "").split(",");
+    if (typeof directions !== 'undefined') {
+      directions = directions.replace(/ /g, '').split(',');
 
       directions.forEach(function(direction) {
-        this.setIsScrollAllowed(value, direction, "m");
+        this.setIsScrollAllowed(value, direction, 'm');
       });
     } else {
-      this.setIsScrollAllowed(value, "all", "m");
+      this.setIsScrollAllowed(value, 'all', 'm');
     }
   }
   setIsScrollAllowed(value, direction, type) {
     //up, down, left, right
-    if (direction !== "all") {
+    if (direction !== 'all') {
       isScrollAllowed[type][direction] = value;
     } else {
       Object.keys(isScrollAllowed[type]).forEach(function(key) {
@@ -247,30 +255,30 @@ const FullScrollPage = class {
   }
 
   addMouseWheelHandler() {
-    let prefix = "";
+    let prefix = '';
     let _addEventListener;
 
     if (window.addEventListener) {
-      _addEventListener = "addEventListener";
+      _addEventListener = 'addEventListener';
     } else {
-      _addEventListener = "attachEvent";
-      prefix = "on";
+      _addEventListener = 'attachEvent';
+      prefix = 'on';
     }
 
     // detect available wheel event
     let support =
-      "onwheel" in document.createElement("div")
-        ? "wheel" // Modern browsers support "wheel"
+      'onwheel' in document.createElement('div')
+        ? 'wheel' // Modern browsers support "wheel"
         : document.onmousewheel !== undefined
-        ? "mousewheel" // Webkit and IE support at least "mousewheel"
-        : "DOMMouseScroll"; // let's assume that remaining browsers are older Firefox
+        ? 'mousewheel' // Webkit and IE support at least "mousewheel"
+        : 'DOMMouseScroll'; // let's assume that remaining browsers are older Firefox
     let passiveEvent = this.g_supportsPassive ? { passive: false } : false;
 
-    if (support == "DOMMouseScroll") {
+    if (support == 'DOMMouseScroll') {
       document[_addEventListener](
-        prefix + "MozMousePixelScroll",
+        prefix + 'MozMousePixelScroll',
         this.MouseWheelHandler,
-        passiveEvent
+        passiveEvent,
       );
     }
 
@@ -279,21 +287,21 @@ const FullScrollPage = class {
       document[_addEventListener](
         prefix + support,
         this.MouseWheelHandler,
-        passiveEvent
+        passiveEvent,
       );
     }
   }
   removeMouseWheelHandler() {
     if (document.addEventListener) {
-      document.removeEventListener("mousewheel", this.MouseWheelHandler, false); //IE9, Chrome, Safari, Oper
-      document.removeEventListener("wheel", this.MouseWheelHandler, false); //Firefox
+      document.removeEventListener('mousewheel', this.MouseWheelHandler, false); //IE9, Chrome, Safari, Oper
+      document.removeEventListener('wheel', this.MouseWheelHandler, false); //Firefox
       document.removeEventListener(
-        "MozMousePixelScroll",
+        'MozMousePixelScroll',
         this.MouseWheelHandler,
-        false
+        false,
       ); //old Firefox
     } else {
-      document.detachEvent("onmousewheel", this.MouseWheelHandler); //IE 6/7/8
+      document.detachEvent('onmousewheel', this.MouseWheelHandler); //IE 6/7/8
     }
   }
 
@@ -305,7 +313,7 @@ const FullScrollPage = class {
     const delta = Math.max(-1, Math.min(1, value));
 
     const horizontalDetection =
-      typeof e.wheelDeltaX !== "undefined" || typeof e.deltaX !== "undefined";
+      typeof e.wheelDeltaX !== 'undefined' || typeof e.deltaX !== 'undefined';
     const isScrollingVertically =
       Math.abs(e.wheelDeltaX) < Math.abs(e.wheelDelta) ||
       Math.abs(e.deltaX) < Math.abs(e.deltaY) ||
@@ -337,9 +345,9 @@ const FullScrollPage = class {
     if (isAccelerating && isScrollingVertically) {
       //scrolling down?
       if (delta < 0) {
-        this.scrolling("down");
+        this.scrolling('down');
       } else {
-        this.scrolling("up");
+        this.scrolling('up');
       }
     }
     return false;
@@ -347,14 +355,14 @@ const FullScrollPage = class {
   scrolling = type => {
     clearTimeout(this.keyId);
     const scrollSection =
-      type === "down" ? this.moveSectionDown : this.moveSectionUp;
+      type === 'down' ? this.moveSectionDown : this.moveSectionUp;
     this.keyId = setTimeout(() => scrollSection(), 300);
   };
-  moveSectionDown = () => this.movePage("down");
-  moveSectionUp = () => this.movePage("up");
+  moveSectionDown = () => this.movePage('down');
+  moveSectionUp = () => this.movePage('up');
   movePage = direction => {
     if (direction === null) return;
-    direction === "down" ? (this.countSection += 1) : (this.countSection -= 1);
+    direction === 'down' ? (this.countSection += 1) : (this.countSection -= 1);
     if (this.countSection === this.$section.length) {
       this.countSection -= 1;
       return;
@@ -363,74 +371,104 @@ const FullScrollPage = class {
       this.countSection = 0;
       return;
     }
-    removeClass(this.$container, "no_transition");
-    removeClass(this.$section, "active");
+    removeClass(this.$container, 'no_transition');
+    removeClass(this.$section, 'active');
     this.translate3d =
-      "translate3d(0px, -" + this.arraySectionH[this.countSection] + "px, 0px)";
+      'translate3d(0px, -' + this.arraySectionH[this.countSection] + 'px, 0px)';
     css(this.$container, getTransforms(this.translate3d));
-    addClass(this.$section[this.countSection], "active");
+    addClass(this.$section[this.countSection], 'active');
     this.checkInViewSection();
   };
 
-  addTouchHandler(events) {
+  addTouchHandler = events => {
     if (this.isTouchDevice || this.isTouch) {
       this.$body.removeEventListener(events.touchmove, this.preventBouncing, {
-        passive: false
+        passive: false,
       });
       this.$body.addEventListener(events.touchmove, this.preventBouncing, {
-        passive: false
+        passive: false,
       });
 
       const touchWrapper = this.$container;
-      touchWrapper.removeEventListener(events.touchstart, touchStartHandler);
-      touchWrapper.removeEventListener(events.touchmove, touchMoveHandler, {
-        passive: false
-      });
-
-      touchWrapper.addEventListener(events.touchstart, touchStartHandler);
-      touchWrapper.addEventListener(events.touchmove, touchMoveHandler, {
-        passive: false
-      });
-    }
-  }
-
-  /**
-   * Removes the auto scrolling for touch devices.
-   */
-  removeTouchHandler() {
-    if (this.isTouchDevice || this.isTouch) {
-      // normalScrollElements requires it off #2691
-      if (options.autoScrolling) {
-        $body.removeEventListener(events.touchmove, touchMoveHandler, {
-          passive: false
-        });
-        $body.removeEventListener(events.touchmove, this.preventBouncing, {
-          passive: false
-        });
-      }
-      let touchWrapper = options.touchWrapper;
       touchWrapper.removeEventListener(
         events.touchstart,
-        this.touchStartHandler
+        this.touchStartHandler,
       );
       touchWrapper.removeEventListener(
         events.touchmove,
         this.touchMoveHandler,
         {
-          passive: false
-        }
+          passive: false,
+        },
+      );
+
+      touchWrapper.addEventListener(events.touchstart, this.touchStartHandler);
+      touchWrapper.addEventListener(events.touchmove, this.touchMoveHandler, {
+        passive: false,
+      });
+    }
+  };
+  touchStartHandler = e => {
+    if (this.isReallyTouch(e)) {
+      let touchEvents = getEventsPage(e);
+      this.touchStartY = touchEvents.y;
+      this.touchStartX = touchEvents.x;
+    }
+  };
+  getEventsPage(e) {
+    let events = [];
+
+    events.y =
+      typeof e.pageY !== 'undefined' && (e.pageY || e.pageX)
+        ? e.pageY
+        : e.touches[0].pageY;
+    events.x =
+      typeof e.pageX !== 'undefined' && (e.pageY || e.pageX)
+        ? e.pageX
+        : e.touches[0].pageX;
+
+    if (isTouch && this.isReallyTouch(e) && typeof e.touches !== 'undefined') {
+      events.y = e.touches[0].pageY;
+      events.x = e.touches[0].pageX;
+    }
+
+    return events;
+  }
+
+  removeTouchHandler = () => {
+    if (this.isTouchDevice || this.isTouch) {
+      // normalScrollElements requires it off #2691
+      if (options.autoScrolling) {
+        $body.removeEventListener(events.touchmove, this.touchMoveHandler, {
+          passive: false,
+        });
+        $body.removeEventListener(events.touchmove, this.preventBouncing, {
+          passive: false,
+        });
+      }
+      let touchWrapper = this.$container;
+      touchWrapper.removeEventListener(
+        events.touchstart,
+        this.touchStartHandler,
+      );
+      touchWrapper.removeEventListener(
+        events.touchmove,
+        this.touchMoveHandler,
+        {
+          passive: false,
+        },
       );
     }
-  }
+  };
 
   getMSPointer() {
     let pointer;
 
     //IE >= 11 & rest of browsers
     if (window.PointerEvent) {
-      pointer = { down: "pointerdown", move: "pointermove" };
+      pointer = { down: 'pointerdown', move: 'pointermove' };
     } else {
-      pointer = { down: "MSPointerDown", move: "MSPointerMove" };
+      pointer = { down: 'MSPointerDown', move: 'MSPointerMove' };
     }
     return pointer;
   }
@@ -446,9 +484,9 @@ const FullScrollPage = class {
   }
   onkeydown(e) {
     if (e.keyCode === 40) {
-      this.movePage("down");
+      this.movePage('down');
     } else if (e.keyCode === 38) {
-      this.movePage("up");
+      this.movePage('up');
     }
   }
 
@@ -460,11 +498,11 @@ const FullScrollPage = class {
   }
   settingHeight() {
     this.sectionH =
-      "innerHeight" in window
+      'innerHeight' in window
         ? window.innerHeight
         : document.documentElement.offsetHeight;
     this.arraySectionH = [];
-    this.$section.forEach(elm => (elm.style.height = this.sectionH + "px"));
+    this.$section.forEach(elm => (elm.style.height = this.sectionH + 'px'));
     for (let i = 0, max = this.sectionLenth; i < max; i++) {
       this.arraySectionH.push(this.sectionH * i);
     }
@@ -472,12 +510,12 @@ const FullScrollPage = class {
   resizeEvt() {
     this.settingHeight();
     this.translate3d =
-      "translate3d(0px, -" + this.arraySectionH[this.countSection] + "px, 0px)";
-    addClass(this.$container, "no_transition");
+      'translate3d(0px, -' + this.arraySectionH[this.countSection] + 'px, 0px)';
+    addClass(this.$container, 'no_transition');
     css(this.$container, getTransforms(this.translate3d));
   }
 };
 let eventFullpage = null;
-window.addEventListener("DOMContentLoaded", () => {
-  eventFullpage = new FullScrollPage("#full_page");
+window.addEventListener('DOMContentLoaded', () => {
+  eventFullpage = new FullScrollPage('#full_page');
 });
