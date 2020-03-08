@@ -232,8 +232,10 @@ const FullScrollPage = class {
   setMouseHijack(value) {
     if (value) {
       this.setMouseWheelScrolling(true);
+      this.addTouchHandler(event);
     } else {
       this.setMouseWheelScrolling(false);
+      this.removeTouchHandler(event);
     }
   }
   setMouseWheelScrolling(value) {
@@ -295,7 +297,7 @@ const FullScrollPage = class {
     }
   }
 
-  MouseWheelHandler(e) {
+  MouseWheelHandler = e => {
     let curTime = new Date().getTime();
     let scrollings = [];
     e = e || window.event;
@@ -341,20 +343,16 @@ const FullScrollPage = class {
       }
     }
     return false;
-  }
-  scrolling(type) {
+  };
+  scrolling = type => {
     clearTimeout(this.keyId);
     const scrollSection =
       type === "down" ? this.moveSectionDown : this.moveSectionUp;
     this.keyId = setTimeout(() => scrollSection(), 300);
-  }
-  moveSectionDown() {
-    this.movePage("down");
-  }
-  moveSectionUp() {
-    this.movePage("up");
-  }
-  movePage(direction) {
+  };
+  moveSectionDown = () => this.movePage("down");
+  moveSectionUp = () => this.movePage("up");
+  movePage = direction => {
     if (direction === null) return;
     direction === "down" ? (this.countSection += 1) : (this.countSection -= 1);
     if (this.countSection === this.$section.length) {
@@ -372,6 +370,28 @@ const FullScrollPage = class {
     css(this.$container, getTransforms(this.translate3d));
     addClass(this.$section[this.countSection], "active");
     this.checkInViewSection();
+  };
+
+  addTouchHandler(events) {
+    if (this.isTouchDevice || this.isTouch) {
+      this.$body.removeEventListener(events.touchmove, this.preventBouncing, {
+        passive: false
+      });
+      this.$body.addEventListener(events.touchmove, this.preventBouncing, {
+        passive: false
+      });
+
+      const touchWrapper = this.$container;
+      touchWrapper.removeEventListener(events.touchstart, touchStartHandler);
+      touchWrapper.removeEventListener(events.touchmove, touchMoveHandler, {
+        passive: false
+      });
+
+      touchWrapper.addEventListener(events.touchstart, touchStartHandler);
+      touchWrapper.addEventListener(events.touchmove, touchMoveHandler, {
+        passive: false
+      });
+    }
   }
 
   /**
